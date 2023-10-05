@@ -36,6 +36,9 @@ jobs:
         extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
         coverage: xdebug
 
+    - name: Check directory structure
+      run: docker-compose exec -T -u root php /bin/bash -c "ls -al"
+
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
