@@ -33,7 +33,7 @@ jobs:
       
       # PHPUnit の testdox 結果をテキストファイルへ出力
       - name: Run PHPUnit with testdox
-        run: docker-compose -f ./docker/docker-compose.yml exec -T php ./vendor/bin/phpunit --testdox > phpunit-testdox.txt
+        run: docker-compose -f ./docker/docker-compose.yml exec -T "php ./vendor/bin/phpunit --testdox" > phpunit-testdox.txt
 
       # PHPUnit の testdox 結果をプルリクエストにコメント
       - name: Comment PHPUnit testdox result
