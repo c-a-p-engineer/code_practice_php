@@ -43,7 +43,7 @@ jobs:
         with:
           filePath: phpunit-testdox.txt
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        working-directory: ./.docker
+          working-directory: ./.docker
 
       # phpstan を実行して結果を reviewdog でコメント
       - name: Run phpstan
