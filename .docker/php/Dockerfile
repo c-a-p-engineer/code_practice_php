@@ -16,3 +16,12 @@ RUN docker-php-ext-install pdo_mysql shmop \
 
 # composerを別のイメージからコピー
 COPY --from=composer /usr/bin/composer /usr/bin/composer
+
+# 非特権ユーザとグループを作成
+RUN groupadd -r phpuser && useradd -r -g phpuser -G www-data phpuser
+
+# Apacheの設定を変更して非特権ユーザで実行
+RUN chown -R phpuser:www-data /var/www
+
+# 非特権ユーザでコマンドを実行
+USER phpuser
