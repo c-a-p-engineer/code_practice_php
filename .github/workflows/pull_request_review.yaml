@@ -1,0 +1,51 @@
+# Workflow の名前
+name: PullRequestReview
+
+# 発火イベント
+on:
+  # プルリクエスト時に実行
+  pull_request:
+    types:
+      # 新しいプルリクエストがオープンされた場合
+      - opened
+      # プルリクエストのブランチに新しいコミットがプッシュされた場合
+      - synchronize
+
+# ジョブ定義
+jobs:
+  build:
+    # 実行環境
+    runs-on: ubuntu-latest
+    
+    steps:
+      # リポジトリをチェックアウト
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Docker イメージをキャッシュ
+      - name: Cache Docker images
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
+
+      # Docker Compose でコンテナを起動
+      - name: Docker Compose Up
+        run: docker-compose -f ./docker/docker-compose.yml up -d
+      
+      # PHPUnit を testdox オプションで実行して結果をテキストファイルに保存
+      - name: Run PHPUnit with testdox
+        run: docker-compose -f ./docker/docker-compose.yml exec -T php ./vendor/bin/phpunit --testdox > phpunit-testdox.txt
+
+      # PHPUnit の testdox 結果をプルリクエストにコメント
+      - name: Comment PHPUnit testdox result
+        uses: thollander/actions-comment-pull-request@v1
+        with:
+          message: "```${{ readfile('phpunit-testdox.txt') }}```"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # phpstan を実行して結果を reviewdog でコメント
+      - name: Run phpstan
+        run: docker-compose -f ./docker/docker-compose.yml exec -T php ./vendor/bin/phpstan analyse | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review
+
+      # php-cs-fixer を実行して結果を reviewdog でコメント
+      - name: Run php-cs-fixer
+        run: docker-compose -f ./docker/docker-compose.yml exec -T php ./vendor/bin/php-cs-fixer fix --dry-run --format=checkstyle | reviewdog -f=checkstyle -name="php-cs-fixer" -reporter=github-pr-review

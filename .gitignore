@@ -1,0 +1,8 @@
+# php
+vendor/
+
+# data
+.data/
+
+# cache
+*.cache

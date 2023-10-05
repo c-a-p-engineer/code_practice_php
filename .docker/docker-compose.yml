@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  php:
+    container_name: php
+    build:
+      context: .
+      dockerfile: ./php/Dockerfile
+    volumes:
+      - ../:/var/www/html
+      - ./php/apache/:/etc/apache2/sites-enabled/
+      - ./php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    ports:
+      - 8080:80
+    command: ["sh", "-c", "composer install; apache2-foreground"]
+    depends_on:
+      - db
+    profiles:
+      - ci
+
+  db:
+    container_name: db
+    image: mysql:8.0
+    volumes:
+      - ./.data/mysql:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpw
+      MYSQL_DATABASE: develop
+      MYSQL_USER: develop
+      MYSQL_PASSWORD: p@ssw0rd
+
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin:latest
+    environment:
+      PMA_HOST: 'mysql'
+    ports:
+      - 18080:80
+    profiles:
+      - ci
