@@ -59,14 +59,20 @@ jobs:
           filePath: phpunit-testdox.txt
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Reviewdogセットアップ
       - uses: reviewdog/action-setup@v1
         with:
           reviewdog_version: latest
 
+      # PHPStan
       - name: phpstan
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./vendor/bin/phpstan analyse --no-progress --error-format=raw | reviewdog -f=phpstan -reporter=github-pr-review
+        run: ./vendor/bin/phpstan analyse ./training/ --level=8 --no-progress --error-format=raw | reviewdog -f=checkstyle -i="No error." -name="phpstan" -reporter=github-pr-review
+
+      # PHP-CS-FIXER
+      - name: Run php-cs-fixer
+        run: ./vendor/bin/php-cs-fixer fix ./training/ --dry-run --diff --rules=@PSR2 --format=checkstyle | reviewdog -f=checkstyle -i="No error." -name="php-cs-fixer" -reporter=github-pr-review
 
       # # phpstan を実行して結果を reviewdog でコメント
       # - name: Run phpstan
