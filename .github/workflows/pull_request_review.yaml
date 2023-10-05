@@ -29,7 +29,7 @@ jobs:
 
       # Docker Compose でコンテナを起動
       - name: Docker Compose Up
-        run: docker-compose -f ./docker/docker-compose.yml --profile ci up -d
+        run: docker-compose -f ./.docker/docker-compose.yml --profile ci up -d
       
       # PHPUnit の testdox 結果をテキストファイルから読み込む
       - name: Get PHPUnit testdox result
@@ -45,8 +45,8 @@ jobs:
 
       # phpstan を実行して結果を reviewdog でコメント
       - name: Run phpstan
-        run: docker-compose -f ./docker/docker-compose.yml exec -T php ./vendor/bin/phpstan analyse | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review
+        run: docker-compose -f ./.docker/docker-compose.yml exec -T php ./vendor/bin/phpstan analyse | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review
 
       # php-cs-fixer を実行して結果を reviewdog でコメント
       - name: Run php-cs-fixer
-        run: docker-compose -f ./docker/docker-compose.yml exec -T php ./vendor/bin/php-cs-fixer fix --dry-run --format=checkstyle | reviewdog -f=checkstyle -name="php-cs-fixer" -reporter=github-pr-review
+        run: docker-compose -f ./.docker/docker-compose.yml exec -T php ./vendor/bin/php-cs-fixer fix --dry-run --format=checkstyle | reviewdog -f=checkstyle -name="php-cs-fixer" -reporter=github-pr-review
