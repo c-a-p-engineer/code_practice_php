@@ -22,3 +22,6 @@ RUN groupadd -r phpuser && useradd -r -g phpuser phpuser
 
 # /var/www/html の所有者を phpuser に設定
 RUN chown -R phpuser:phpuser /var/www/html
+
+# 作成したユーザーに切り替える
+USER phpuser
