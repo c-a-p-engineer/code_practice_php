@@ -36,12 +36,6 @@ jobs:
         extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
         coverage: xdebug
 
-    - name: Check directory structure
-      run: ls -al
-
-    - name: Composer Version
-      run: composer -v
-
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
@@ -60,10 +54,10 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Run phpstan
-      run: vendor/bin/phpstan ./tests/ analyse --level=8 --error-format=checkstyle | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-check
+      run: ./vendor/bin/phpstan analyse ./training/ --level=8 --error-format=checkstyle | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-check
 
     - name: Run php-cs-fixer
-      run: vendor/bin/php-cs-fixer fix --dry-run --format=checkstyle | reviewdog -f=checkstyle -name="php-cs-fixer" -reporter=github-pr-check
+      run: ./vendor/bin/php-cs-fixer fix ./training/ --dry-run --diff --format=checkstyle | reviewdog -f=checkstyle -name="php-cs-fixer" -reporter=github-pr-check
 
 # # ジョブ定義
 # jobs:
