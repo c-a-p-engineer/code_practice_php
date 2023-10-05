@@ -11,73 +11,121 @@ on:
       # プルリクエストのブランチに新しいコミットがプッシュされた場合
       - synchronize
 
-# ジョブ定義
 jobs:
-  phpunit:
-    # 実行環境
+  build:
     runs-on: ubuntu-latest
-    
-    steps:
-      # リポジトリをチェックアウト
-      - name: Checkout code
-        uses: actions/checkout@v2
 
-      # Docker イメージをキャッシュ
-      # - name: Cache Docker images
-      #   uses: satackey/action-docker-layer-caching@v0.0.11
-      #   continue-on-error: true
-
-      # Docker Compose でコンテナを起動
-      - name: Docker Compose Up
-        run: docker-compose build --no-cache && docker-compose up -d
-        working-directory: ./.docker
-
-      - name: Check directory structure
-        run: docker-compose exec -T -u root php /bin/bash -c "ls -al"
-        working-directory: ./.docker
-
-      - name: Composer Install
-        run: docker-compose exec -T -u root php /bin/bash -c "composer clear-cache && composer install"
-        working-directory: ./.docker
-
-      - name: Check directory structure
-        run: docker-compose exec -T -u root php /bin/bash -c "ls -al ./vendor"
-        working-directory: ./.docker
-
-      # PHPUnit の testdox 結果をテキストファイルへ出力
-      - name: Run PHPUnit with testdox
-        run: docker-compose exec -T -u root php /bin/bash -c "./vendor/bin/phpunit ./tests/ --testdox > phpunit-testdox.txt"
-        working-directory: ./.docker
-
-      # PHPUnit の testdox 結果をプルリクエストにコメント
-      - name: Comment PHPUnit testdox result
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          filePath: phpunit-testdox.txt
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Reviewdogセットアップ
-      - uses: reviewdog/action-setup@v1
-        with:
-          reviewdog_version: latest
-
-      # PHPStan
-      - name: phpstan
+    services:
+      mysql:
+        image: mysql:8.0
         env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./vendor/bin/phpstan analyse ./training/ --level=8 --no-progress --error-format=raw | reviewdog -f=checkstyle -i="No error." -name="phpstan" -reporter=github-pr-review
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_USER: develop
+          MYSQL_PASSWORD: p@ssw0rd
+          MYSQL_DATABASE: develop
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
-      # PHP-CS-FIXER
-      - name: Run php-cs-fixer
-        run: ./vendor/bin/php-cs-fixer fix ./training/ --dry-run --diff --rules=@PSR2 --format=checkstyle | reviewdog -f=checkstyle -i="No error." -name="php-cs-fixer" -reporter=github-pr-review
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      # # phpstan を実行して結果を reviewdog でコメント
-      # - name: Run phpstan
-      #   run: docker-compose exec -T -u root php /bin/bash -c "./vendor/bin/phpstan analyse" | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review
-      #   working-directory: ./.docker
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.0'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
+        coverage: xdebug
 
-      # # php-cs-fixer を実行して結果を reviewdog でコメント
-      # - name: Run php-cs-fixer
-      #   run: docker-compose exec -T -u root php /bin/bash -c "./vendor/bin/php-cs-fixer fix --dry-run --format=checkstyle" | reviewdog -f=checkstyle -name="php-cs-fixer" -reporter=github-pr-review
-      #   working-directory: ./.docker
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Copy .env
+      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+    - name: Run PHPUnit with testdox output
+      id: phpunit
+      run: ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt
+
+    # PHPUnit の testdox 結果をプルリクエストにコメント
+    - name: Comment PHPUnit testdox result
+      uses: thollander/actions-comment-pull-request@v2
+      with:
+        filePath: phpunit.txt
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Run phpstan
+      run: vendor/bin/phpstan ./tests/ analyse --level=8 --error-format=checkstyle | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-check
+
+    - name: Run php-cs-fixer
+      run: vendor/bin/php-cs-fixer fix --dry-run --format=checkstyle | reviewdog -f=checkstyle -name="php-cs-fixer" -reporter=github-pr-check
+
+# # ジョブ定義
+# jobs:
+#   phpunit:
+#     # 実行環境
+#     runs-on: ubuntu-latest
+    
+#     steps:
+#       # リポジトリをチェックアウト
+#       - name: Checkout code
+#         uses: actions/checkout@v2
+
+#       # Docker イメージをキャッシュ
+#       # - name: Cache Docker images
+#       #   uses: satackey/action-docker-layer-caching@v0.0.11
+#       #   continue-on-error: true
+
+#       # Docker Compose でコンテナを起動
+#       - name: Docker Compose Up
+#         run: docker-compose build --no-cache && docker-compose up -d
+#         working-directory: ./.docker
+
+#       - name: Check directory structure
+#         run: docker-compose exec -T -u root php /bin/bash -c "ls -al"
+#         working-directory: ./.docker
+
+#       - name: Composer Install
+#         run: docker-compose exec -T -u root php /bin/bash -c "composer clear-cache && composer install"
+#         working-directory: ./.docker
+
+#       - name: Check directory structure
+#         run: docker-compose exec -T -u root php /bin/bash -c "ls -al ./vendor"
+#         working-directory: ./.docker
+
+#       # PHPUnit の testdox 結果をテキストファイルへ出力
+#       - name: Run PHPUnit with testdox
+#         run: docker-compose exec -T -u root php /bin/bash -c "./vendor/bin/phpunit ./tests/ --testdox > phpunit-testdox.txt"
+#         working-directory: ./.docker
+
+#       # PHPUnit の testdox 結果をプルリクエストにコメント
+#       - name: Comment PHPUnit testdox result
+#         uses: thollander/actions-comment-pull-request@v2
+#         with:
+#           filePath: phpunit-testdox.txt
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+#       # Reviewdogセットアップ
+#       - uses: reviewdog/action-setup@v1
+#         with:
+#           reviewdog_version: latest
+
+#       # PHPStan
+#       - name: phpstan
+#         env:
+#           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         run: ./vendor/bin/phpstan analyse ./training/ --level=8 --no-progress --error-format=raw | reviewdog -f=checkstyle -i="No error." -name="phpstan" -reporter=github-pr-review
+
+#       # PHP-CS-FIXER
+#       - name: Run php-cs-fixer
+#         run: ./vendor/bin/php-cs-fixer fix ./training/ --dry-run --diff --rules=@PSR2 --format=checkstyle | reviewdog -f=checkstyle -i="No error." -name="php-cs-fixer" -reporter=github-pr-review
+
+#       # # phpstan を実行して結果を reviewdog でコメント
+#       # - name: Run phpstan
+#       #   run: docker-compose exec -T -u root php /bin/bash -c "./vendor/bin/phpstan analyse" | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review
+#       #   working-directory: ./.docker
+
+#       # # php-cs-fixer を実行して結果を reviewdog でコメント
+#       # - name: Run php-cs-fixer
+#       #   run: docker-compose exec -T -u root php /bin/bash -c "./vendor/bin/php-cs-fixer fix --dry-run --format=checkstyle" | reviewdog -f=checkstyle -name="php-cs-fixer" -reporter=github-pr-review
+#       #   working-directory: ./.docker
 
