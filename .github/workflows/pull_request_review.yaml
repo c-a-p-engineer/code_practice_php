@@ -32,12 +32,15 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.0'
+        php-version: '8.2'
         extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
         coverage: xdebug
 
     - name: Check directory structure
       run: ls -al
+
+    - name: Composer Version
+      run: composer -v
 
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
