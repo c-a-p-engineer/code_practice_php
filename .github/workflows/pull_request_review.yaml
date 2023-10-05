@@ -13,7 +13,7 @@ on:
 
 # ジョブ定義
 jobs:
-  build:
+  phpunit:
     # 実行環境
     runs-on: ubuntu-latest
     
@@ -52,10 +52,6 @@ jobs:
         run: docker-compose exec -T -u root php /bin/bash -c "./vendor/bin/phpunit ./tests/ --testdox > phpunit-testdox.txt"
         working-directory: ./.docker
 
-      # ディレクトリの内容をリストアップ
-      - name: List directory contents
-        run: ls -l
-
       # PHPUnit の testdox 結果をプルリクエストにコメント
       - name: Comment PHPUnit testdox result
         uses: thollander/actions-comment-pull-request@v2
@@ -63,12 +59,25 @@ jobs:
           filePath: phpunit-testdox.txt
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # phpstan を実行して結果を reviewdog でコメント
-      - name: Run phpstan
-        run: docker-compose exec -T -u root php /bin/bash -c "./vendor/bin/phpstan analyse" | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review
-        working-directory: ./.docker
+      - uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
 
-      # php-cs-fixer を実行して結果を reviewdog でコメント
-      - name: Run php-cs-fixer
-        run: docker-compose exec -T -u root php /bin/bash -c "./vendor/bin/php-cs-fixer fix --dry-run --format=checkstyle" | reviewdog -f=checkstyle -name="php-cs-fixer" -reporter=github-pr-review
-        working-directory: ./.docker
+      - name: setup composer
+        run: composer install
+
+      - name: static code analysis
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./vendor/bin/phpstan analyse --no-progress --error-format=raw | reviewdog -f=phpstan -reporter=github-pr-review
+
+      # # phpstan を実行して結果を reviewdog でコメント
+      # - name: Run phpstan
+      #   run: docker-compose exec -T -u root php /bin/bash -c "./vendor/bin/phpstan analyse" | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review
+      #   working-directory: ./.docker
+
+      # # php-cs-fixer を実行して結果を reviewdog でコメント
+      # - name: Run php-cs-fixer
+      #   run: docker-compose exec -T -u root php /bin/bash -c "./vendor/bin/php-cs-fixer fix --dry-run --format=checkstyle" | reviewdog -f=checkstyle -name="php-cs-fixer" -reporter=github-pr-review
+      #   working-directory: ./.docker
+
