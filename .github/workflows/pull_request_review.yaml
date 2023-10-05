@@ -37,10 +37,10 @@ jobs:
           docker-compose exec -T php /bin/bash -c "ls -al"
         working-directory: ./.docker
 
-      - name: Composer Install
-        run: |
-          docker-compose exec -T -u root php /bin/bash -c "composer install"
-        working-directory: ./.docker
+      # - name: Composer Install
+      #   run: |
+      #     docker-compose exec -T -u root php /bin/bash -c "composer install"
+      #   working-directory: ./.docker
 
       - name: Check directory structure
         run: |
