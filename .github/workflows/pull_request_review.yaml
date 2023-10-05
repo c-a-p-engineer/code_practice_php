@@ -42,7 +42,6 @@ jobs:
       # ディレクトリの内容をリストアップ
       - name: List directory contents
         run: ls -l
-        working-directory: ./.docker
 
       # PHPUnit の testdox 結果をプルリクエストにコメント
       - name: Comment PHPUnit testdox result
@@ -50,7 +49,6 @@ jobs:
         with:
           filePath: phpunit-testdox.txt
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          working-directory: ./.docker
 
       # phpstan を実行して結果を reviewdog でコメント
       - name: Run phpstan
