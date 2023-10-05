@@ -16,3 +16,6 @@ RUN docker-php-ext-install pdo_mysql shmop \
 
 # composerを別のイメージからコピー
 COPY --from=composer /usr/bin/composer /usr/bin/composer
+
+# 非rootユーザーを作成
+RUN groupadd -r phpuser && useradd -r -g phpuser phpuser

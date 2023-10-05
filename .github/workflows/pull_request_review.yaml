@@ -34,24 +34,24 @@ jobs:
 
       - name: Check directory structure
         run: |
-          docker-compose exec -T -u root php /bin/bash -c "ls -al"
+          docker-compose exec -T php /bin/bash -c "ls -al"
         working-directory: ./.docker
 
       - name: Composer Install
         run: |
-          docker-compose exec -T -u root php /bin/bash -c "composer install"
+          docker-compose exec -T php /bin/bash -c "composer install"
         working-directory: ./.docker
 
       # - name: Check directory structure
       #   run: |
-      #     docker-compose exec -T -u root php /bin/bash -c "ls -al ./vendor/bin"
+      #     docker-compose exec -T php /bin/bash -c "ls -al ./vendor/bin"
       #   working-directory: ./.docker
 
       # PHPUnit の testdox 結果をテキストファイルへ出力
       - name: Run PHPUnit with testdox
         # run: docker-compose exec -T php ./vendor/bin/phpunit ./tests/ --testdox >> phpunit-testdox.txt
         run: |
-          docker-compose exec -T -u root php /bin/bash -c "./vendor/bin/phpunit ./tests/ --testdox > phpunit-testdox.txt"
+          docker-compose exec -T php /bin/bash -c "./vendor/bin/phpunit ./tests/ --testdox > phpunit-testdox.txt"
         working-directory: ./.docker
 
       # ディレクトリの内容をリストアップ
@@ -67,10 +67,10 @@ jobs:
 
       # phpstan を実行して結果を reviewdog でコメント
       - name: Run phpstan
-        run: docker-compose exec -T -u root php ./vendor/bin/phpstan analyse | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review
+        run: docker-compose exec -T php ./vendor/bin/phpstan analyse | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review
         working-directory: ./.docker
 
       # php-cs-fixer を実行して結果を reviewdog でコメント
       - name: Run php-cs-fixer
-        run: docker-compose exec -T -u root php ./vendor/bin/php-cs-fixer fix --dry-run --format=checkstyle | reviewdog -f=checkstyle -name="php-cs-fixer" -reporter=github-pr-review
+        run: docker-compose exec -T php ./vendor/bin/php-cs-fixer fix --dry-run --format=checkstyle | reviewdog -f=checkstyle -name="php-cs-fixer" -reporter=github-pr-review
         working-directory: ./.docker
