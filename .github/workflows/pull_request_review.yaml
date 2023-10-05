@@ -29,27 +29,28 @@ jobs:
 
       # Docker Compose でコンテナを起動
       - name: Docker Compose Up
-        run: docker-compose -f ./.docker/docker-compose.yml up -d
-      
+        run: docker-compose -f docker-compose.yml up -d
+        working-directory: ./.docker
+
       # PHPUnit の testdox 結果をテキストファイルへ出力
       - name: Run PHPUnit with testdox
-        run: docker-compose -f ./docker/docker-compose.yml exec -T "php ./vendor/bin/phpunit --testdox"
+        run: docker-compose exec php ./vendor/bin/phpunit ./tests/ --testdox > phpunit-testdox.txt
+        working-directory: ./.docker
 
-      # # ディレクトリの内容をリストアップ
-      # - name: List directory contents
-      #   run: ls -l
+      # PHPUnit の testdox 結果をプルリクエストにコメント
+      - name: Comment PHPUnit testdox result
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          filePath: phpunit-testdox.txt
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: ./.docker
 
-      # # PHPUnit の testdox 結果をプルリクエストにコメント
-      # - name: Comment PHPUnit testdox result
-      #   uses: thollander/actions-comment-pull-request@v2
-      #   with:
-      #     filePath: phpunit-testdox.txt
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # phpstan を実行して結果を reviewdog でコメント
+      - name: Run phpstan
+        run: docker-compose -f docker-compose.yml exec -T php ./vendor/bin/phpstan analyse | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review
+        working-directory: ./.docker
 
-      # # phpstan を実行して結果を reviewdog でコメント
-      # - name: Run phpstan
-      #   run: docker-compose -f ./.docker/docker-compose.yml exec -T php ./vendor/bin/phpstan analyse | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review
-
-      # # php-cs-fixer を実行して結果を reviewdog でコメント
-      # - name: Run php-cs-fixer
-      #   run: docker-compose -f ./.docker/docker-compose.yml exec -T php ./vendor/bin/php-cs-fixer fix --dry-run --format=checkstyle | reviewdog -f=checkstyle -name="php-cs-fixer" -reporter=github-pr-review
+      # php-cs-fixer を実行して結果を reviewdog でコメント
+      - name: Run php-cs-fixer
+        run: docker-compose -f docker-compose.yml exec -T php ./vendor/bin/php-cs-fixer fix --dry-run --format=checkstyle | reviewdog -f=checkstyle -name="php-cs-fixer" -reporter=github-pr-review
+        working-directory: ./.docker
