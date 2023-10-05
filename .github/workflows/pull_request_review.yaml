@@ -32,6 +32,15 @@ jobs:
         run: docker-compose up -d
         working-directory: ./.docker
 
+      - name: Check directory structure
+        run: |
+          docker-compose exec -T php /bin/bash -c "ls -al"
+
+      - name: Check directory structure
+        run: |
+          docker-compose exec -T php /bin/bash -c "ls -al ./vendor/bin"
+
+
       # PHPUnit の testdox 結果をテキストファイルへ出力
       - name: Run PHPUnit with testdox
         # run: docker-compose exec -T php ./vendor/bin/phpunit ./tests/ --testdox >> phpunit-testdox.txt
