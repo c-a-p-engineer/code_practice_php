@@ -41,7 +41,7 @@ jobs:
       #   working-directory: ./.docker
 
       - name: Check directory structure
-        run: docker-compose exec -T -u root php /bin/bash -c "ls -al ./vendor/bin"
+        run: docker-compose exec -T -u root php /bin/bash -c "ls -al ./vendor"
         working-directory: ./.docker
 
       # PHPUnit の testdox 結果をテキストファイルへ出力
