@@ -29,18 +29,17 @@ jobs:
 
       # Docker Compose でコンテナを起動
       - name: Docker Compose Up
-        run: docker-compose -f ./.docker/docker-compose.yml --profile ci up -d
+        run: docker-compose -f ./.docker/docker-compose.yml up -d
       
-      # PHPUnit の testdox 結果をテキストファイルから読み込む
-      - name: Get PHPUnit testdox result
-        id: get-testdox
-        run: echo "::set-output name=result::$(cat phpunit-testdox.txt)"
+      # PHPUnit の testdox 結果をテキストファイルへ出力
+      - name: Run PHPUnit with testdox
+        run: docker-compose -f ./docker/docker-compose.yml exec -T php ./vendor/bin/phpunit --testdox > phpunit-testdox.txt
 
       # PHPUnit の testdox 結果をプルリクエストにコメント
       - name: Comment PHPUnit testdox result
-        uses: thollander/actions-comment-pull-request@v1
+        uses: thollander/actions-comment-pull-request@v2
         with:
-          message: "```${{ steps.get-testdox.outputs.result }}```"
+          filePath: phpunit-testdox.txt
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # phpstan を実行して結果を reviewdog でコメント

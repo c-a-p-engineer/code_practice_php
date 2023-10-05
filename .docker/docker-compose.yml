@@ -15,8 +15,6 @@ services:
     command: ["sh", "-c", "composer install; apache2-foreground"]
     depends_on:
       - db
-    profiles:
-      - ci
 
   db:
     container_name: db
@@ -38,5 +36,3 @@ services:
       PMA_HOST: 'mysql'
     ports:
       - 18080:80
-    profiles:
-      - ci
