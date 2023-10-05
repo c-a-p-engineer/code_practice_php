@@ -34,7 +34,9 @@ jobs:
 
       # PHPUnit の testdox 結果をテキストファイルへ出力
       - name: Run PHPUnit with testdox
-        run: docker-compose exec -T php ./vendor/bin/phpunit ./tests/ --testdox >> phpunit-testdox.txt
+        # run: docker-compose exec -T php ./vendor/bin/phpunit ./tests/ --testdox >> phpunit-testdox.txt
+        run: |
+          docker-compose exec -T php /bin/bash -c "./vendor/bin/phpunit ./tests/ --testdox > phpunit-testdox.txt"
         working-directory: ./.docker
 
       # ディレクトリの内容をリストアップ
