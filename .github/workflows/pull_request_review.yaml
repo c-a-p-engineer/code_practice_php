@@ -37,7 +37,7 @@ jobs:
         coverage: xdebug
 
     - name: Check directory structure
-      run: docker-compose exec -T -u root php /bin/bash -c "ls -al"
+      run: ls -al
 
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
