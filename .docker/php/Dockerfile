@@ -19,3 +19,6 @@ COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 # 非rootユーザーを作成
 RUN groupadd -r phpuser && useradd -r -g phpuser phpuser
+
+# /var/www/html の所有者を phpuser に設定
+RUN chown -R phpuser:phpuser /var/www/html
