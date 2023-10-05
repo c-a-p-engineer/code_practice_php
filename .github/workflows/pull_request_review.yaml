@@ -42,6 +42,10 @@ jobs:
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.example', '.env');"
 
+    - uses: reviewdog/action-setup@v1
+      with:
+        reviewdog_version: latest
+
     - name: Run PHPUnit with testdox output
       id: phpunit
       run: ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt
@@ -54,9 +58,13 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Run phpstan
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: ./vendor/bin/phpstan analyse ./training/ --level=8 --error-format=checkstyle | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-check
 
     - name: Run php-cs-fixer
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: ./vendor/bin/php-cs-fixer fix ./training/ --dry-run --diff --format=checkstyle | reviewdog -f=checkstyle -name="php-cs-fixer" -reporter=github-pr-check
 
 # # ジョブ定義
