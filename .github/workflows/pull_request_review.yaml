@@ -65,10 +65,10 @@ jobs:
 
       # phpstan を実行して結果を reviewdog でコメント
       - name: Run phpstan
-        run: docker-compose exec -T php ./vendor/bin/phpstan analyse | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review
+        run: docker-compose exec -T -u root php /bin/bash -c "./vendor/bin/phpstan analyse" | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review
         working-directory: ./.docker
 
       # php-cs-fixer を実行して結果を reviewdog でコメント
       - name: Run php-cs-fixer
-        run: docker-compose exec -T php ./vendor/bin/php-cs-fixer fix --dry-run --format=checkstyle | reviewdog -f=checkstyle -name="php-cs-fixer" -reporter=github-pr-review
+        run: docker-compose exec -T -u root php /bin/bash -c "./vendor/bin/php-cs-fixer fix --dry-run --format=checkstyle" | reviewdog -f=checkstyle -name="php-cs-fixer" -reporter=github-pr-review
         working-directory: ./.docker
