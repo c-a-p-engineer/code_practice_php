@@ -37,7 +37,7 @@ jobs:
         working-directory: ./.docker
 
       - name: Composer Install
-        run: docker-compose exec -T -u root php /bin/bash -c "composer install"
+        run: docker-compose exec -T -u root php /bin/bash -c "composer clear-cache && composer install"
         working-directory: ./.docker
 
       - name: Check directory structure
