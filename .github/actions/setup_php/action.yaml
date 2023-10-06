@@ -13,3 +13,6 @@ runs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
       shell: bash
+    - uses: reviewdog/action-setup@v1
+      with:
+        reviewdog_version: latest

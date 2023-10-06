@@ -9,6 +9,17 @@ on:
 jobs:
   phpunit:
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_USER: develop
+          MYSQL_PASSWORD: p@ssw0rd
+          MYSQL_DATABASE: develop
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
