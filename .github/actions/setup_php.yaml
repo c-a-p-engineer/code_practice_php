@@ -1,7 +1,7 @@
-name: 'Setup Environment'
-description: 'Setup PHP and Composer'
-runs:
-  using: "composite"
+name: 'Setup PHP'
+on:
+  workflow_call:
+jobs:
   setup:
     runs-on: ubuntu-latest
     steps:
