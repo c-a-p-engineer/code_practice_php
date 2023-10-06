@@ -21,17 +21,23 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Setup environment
-      uses: ./.github/actions/setup_php
     - name: Run PHPUnit with testdox output
-      run: ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt
+      run: |
+        ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt || echo "PHPUnit tests failed" > phpunit_fail.txt
+      continue-on-error: true
+
     - name: Comment PHPUnit testdox result
       uses: thollander/actions-comment-pull-request@v2
       with:
         filePath: phpunit.txt
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Check for PHPUnit failures and comment
+      run: |
+        if [ -f "phpunit_fail.txt" ]; then
+          echo "Failed tests detected, exiting with error."
+          exit 1
+        fi
 
   phpsyntax:
     runs-on: ubuntu-latest
@@ -47,6 +53,12 @@ jobs:
       with:
         filePath: phpsyntax.txt
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Check for PHP Syntax errors and fail if found
+      run: |
+        if [ -s "phpsyntax.txt" ]; then
+          echo "Syntax errors found in PHP files, exiting with error."
+          exit 1
+        fi
 
   phpstan:
     runs-on: ubuntu-latest
@@ -56,7 +68,9 @@ jobs:
     - name: Setup environment
       uses: ./.github/actions/setup_php
     - name: Run PHPStan
-      run: ./vendor/bin/phpstan analyse ./training/ --level=8 --no-progress --error-format=checkstyle | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review
+      run: |
+        ./vendor/bin/phpstan analyse ./training/ --level=8 --no-progress --error-format=checkstyle
+        | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review -fail-on-error=true
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -68,6 +82,8 @@ jobs:
     - name: Setup environment
       uses: ./.github/actions/setup_php
     - name: Run PHP_CodeSniffer
-      run: ./vendor/bin/phpcs ./training/ --report=checkstyle | reviewdog -f=checkstyle -name="phpcs" -reporter=github-pr-review
+      run: |
+      ./vendor/bin/phpcs ./training/ --report=checkstyle
+      | reviewdog -f=checkstyle -name="phpcs" -reporter=github-pr-review -fail-on-error=true
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
