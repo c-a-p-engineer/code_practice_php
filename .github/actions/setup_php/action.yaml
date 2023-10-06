@@ -1,10 +1,9 @@
-name: 'Setup Environment'
-description: 'Setup PHP and Composer'
+inputs:
+  name:
+    description: 'Setup PHP'
 runs:
   using: "composite"
   steps:
-    # - name: Checkout code
-    #   uses: actions/checkout@v2
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
