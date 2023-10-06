@@ -83,7 +83,7 @@ jobs:
       uses: ./.github/actions/setup_php
     - name: Run PHP_CodeSniffer
       run: |
-      ./vendor/bin/phpcs ./training/ --report=checkstyle
-      | reviewdog -f=checkstyle -name="phpcs" -reporter=github-pr-review -fail-on-error=true
+        ./vendor/bin/phpcs ./training/ --report=checkstyle
+        | reviewdog -f=checkstyle -name="phpcs" -reporter=github-pr-review -fail-on-error=true
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
