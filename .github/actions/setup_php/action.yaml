@@ -12,3 +12,4 @@ runs:
         coverage: xdebug
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
+      shell: bash
