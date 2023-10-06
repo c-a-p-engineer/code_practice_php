@@ -7,36 +7,11 @@ on:
       - synchronize
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2'
-        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
-        coverage: xdebug
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
-    - name: Copy .env
-      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
-
-  debug:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-    # Debug: Show current directory and list files
-    - name: Debug - Show directory and list files
-      run: |
-        pwd
-        ls -la
-
   phpunit:
-    needs: setup
     runs-on: ubuntu-latest
     steps:
+    - name: Setup environment
+      uses: ./.github/actions/php_setup.yaml
     - name: Run PHPUnit with testdox output
       run: ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt
     - name: Comment PHPUnit testdox result
@@ -46,9 +21,10 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   phpsyntax:
-    needs: setup
     runs-on: ubuntu-latest
     steps:
+    - name: Setup environment
+      uses: ./.github/actions/php_setup.yaml
     - name: Run PHP Syntax
       run: find ./training/ -name "*.php" -exec sh -c 'php -l "$1" | grep -q "No syntax errors" || (echo "Error in $1" && php -l "$1")' _ {} \; > phpsyntax.txt
     - name: Comment PHP Syntax
@@ -58,15 +34,17 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   phpstan:
-    needs: setup
     runs-on: ubuntu-latest
     steps:
+    - name: Setup environment
+      uses: ./.github/actions/php_setup.yaml
     - name: Run PHPStan
       run: ./vendor/bin/phpstan analyse ./training/ --level=8 --no-progress --error-format=checkstyle | reviewdog -f=checkstyle -name="PHPStan" -reporter=github-pr-review
 
   phpcs:
-    needs: setup
     runs-on: ubuntu-latest
     steps:
+    - name: Setup environment
+      uses: ./.github/actions/php_setup.yaml
     - name: Run PHP_CodeSniffer
       run: ./vendor/bin/phpcs ./training/ --report=checkstyle | reviewdog -f=checkstyle -name="PHPCS" -reporter=github-pr-review

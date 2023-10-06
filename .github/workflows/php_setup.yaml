@@ -1,0 +1,19 @@
+name: 'Setup Environment'
+description: 'Setup PHP and Composer'
+runs:
+  using: "composite"
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
+        coverage: xdebug
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+    - name: Copy .env
+      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
