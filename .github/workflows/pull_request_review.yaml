@@ -23,15 +23,22 @@ jobs:
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.example', '.env');"
 
+  debug:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+    # Debug: Show current directory and list files
+    - name: Debug - Show directory and list files
+      run: |
+        pwd
+        ls -la
+
   phpunit:
     needs: setup
     runs-on: ubuntu-latest
     steps:
     - name: Run PHPUnit with testdox output
-      run: |
-        pwd
-        ls -la
-        ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt
+      run: ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt
     - name: Comment PHPUnit testdox result
       uses: thollander/actions-comment-pull-request@v2
       with:
