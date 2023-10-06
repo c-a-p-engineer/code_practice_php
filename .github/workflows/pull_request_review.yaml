@@ -29,9 +29,9 @@ jobs:
     steps:
     - name: Run PHPUnit with testdox output
       run: |
-      pwd
-      ls -la
-      ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt
+        pwd
+        ls -la
+        ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt
     - name: Comment PHPUnit testdox result
       uses: thollander/actions-comment-pull-request@v2
       with:
