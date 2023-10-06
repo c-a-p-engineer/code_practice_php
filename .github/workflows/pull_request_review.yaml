@@ -57,6 +57,8 @@ jobs:
       uses: ./.github/actions/setup_php
     - name: Run PHPStan
       run: ./vendor/bin/phpstan analyse ./training/ --level=8 --no-progress --error-format=checkstyle | reviewdog -f=checkstyle -name="PHPStan" -reporter=github-pr-review
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   phpcs:
     runs-on: ubuntu-latest
@@ -67,3 +69,5 @@ jobs:
       uses: ./.github/actions/setup_php
     - name: Run PHP_CodeSniffer
       run: ./vendor/bin/phpcs ./training/ --report=checkstyle | reviewdog -f=checkstyle -name="PHPCS" -reporter=github-pr-review
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
