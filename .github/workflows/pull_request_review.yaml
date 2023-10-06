@@ -1,79 +1,62 @@
-# Workflow の名前
 name: PullRequestReview
 
-# 発火イベント
 on:
-  # プルリクエスト時に実行
   pull_request:
     types:
-      # 新しいプルリクエストがオープンされた場合
       - opened
-      # プルリクエストのブランチに新しいコミットがプッシュされた場合
       - synchronize
 
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
-
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_USER: develop
-          MYSQL_PASSWORD: p@ssw0rd
-          MYSQL_DATABASE: develop
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.2'
         extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
         coverage: xdebug
-
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
-
     - name: Copy .env
       run: php -r "file_exists('.env') || copy('.env.example', '.env');"
 
-    - uses: reviewdog/action-setup@v1
-      with:
-        reviewdog_version: latest
-
+  phpunit:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
     - name: Run PHPUnit with testdox output
-      id: phpunit
       run: ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt
-
-    # PHPUnit の testdox 結果をプルリクエストにコメント
     - name: Comment PHPUnit testdox result
       uses: thollander/actions-comment-pull-request@v2
       with:
         filePath: phpunit.txt
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  phpsyntax:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
     - name: Run PHP Syntax
-      env:
-        REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: find ./training/ -name "*.php" -exec sh -c 'php -l "$1" | grep -q "No syntax errors" || (echo "Error in $1" && php -l "$1")' _ {} \; > phpsyntax.txt
-
     - name: Comment PHP Syntax
       uses: thollander/actions-comment-pull-request@v2
       with:
         filePath: phpsyntax.txt
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  phpstan:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
     - name: Run PHPStan
-      env:
-        REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: ./vendor/bin/phpstan analyse ./training/ --level=8 --no-progress --error-format=checkstyle | reviewdog -f=checkstyle -name="PHPStan" -reporter=github-pr-review
 
+  phpcs:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
     - name: Run PHP_CodeSniffer
-      env:
-        REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: ./vendor/bin/phpcs ./training/ --report=checkstyle | reviewdog -f=checkstyle -name="PHPCS" -reporter=github-pr-review
