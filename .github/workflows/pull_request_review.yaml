@@ -12,10 +12,6 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-    - name: Debug - Show directory and list files
-      run: |
-        pwd
-        ls -la
     - name: Setup environment
       uses: ./.github/actions/setup_php
     - name: Run PHPUnit with testdox output
@@ -29,6 +25,8 @@ jobs:
   phpsyntax:
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
     - name: Setup environment
       uses: ./.github/actions/setup_php
     - name: Run PHP Syntax
@@ -42,6 +40,8 @@ jobs:
   phpstan:
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
     - name: Setup environment
       uses: ./.github/actions/setup_php
     - name: Run PHPStan
@@ -50,6 +50,8 @@ jobs:
   phpcs:
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
     - name: Setup environment
       uses: ./.github/actions/setup_php
     - name: Run PHP_CodeSniffer
