@@ -17,7 +17,7 @@ jobs:
         pwd
         ls -la
     - name: Setup environment
-      uses: ./.github/actions/setup_php/action.yaml
+      uses: ./.github/actions/setup_php
     - name: Run PHPUnit with testdox output
       run: ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt
     - name: Comment PHPUnit testdox result
@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Setup environment
-      uses: ./.github/actions/setup_php/action.yaml
+      uses: ./.github/actions/setup_php
     - name: Run PHP Syntax
       run: find ./training/ -name "*.php" -exec sh -c 'php -l "$1" | grep -q "No syntax errors" || (echo "Error in $1" && php -l "$1")' _ {} \; > phpsyntax.txt
     - name: Comment PHP Syntax
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Setup environment
-      uses: ./.github/actions/setup_php/action.yaml
+      uses: ./.github/actions/setup_php
     - name: Run PHPStan
       run: ./vendor/bin/phpstan analyse ./training/ --level=8 --no-progress --error-format=checkstyle | reviewdog -f=checkstyle -name="PHPStan" -reporter=github-pr-review
 
@@ -51,6 +51,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Setup environment
-      uses: ./.github/actions/setup_php/action.yaml
+      uses: ./.github/actions/setup_php
     - name: Run PHP_CodeSniffer
       run: ./vendor/bin/phpcs ./training/ --report=checkstyle | reviewdog -f=checkstyle -name="PHPCS" -reporter=github-pr-review

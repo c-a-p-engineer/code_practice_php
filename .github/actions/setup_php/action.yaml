@@ -1,12 +1,10 @@
-name: 'Setup PHP'
-on:
-  workflow_call:
-jobs:
-  setup:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+name: 'Setup Environment'
+description: 'Setup PHP and Composer'
+runs:
+  using: "composite"
+  steps:
+    # - name: Checkout code
+    #   uses: actions/checkout@v2
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
@@ -15,5 +13,3 @@ jobs:
         coverage: xdebug
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
-    - name: Copy .env
-      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
