@@ -57,13 +57,15 @@ jobs:
         filePath: phpunit.txt
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Run PHP Syntax Checker with reviewdog
-      run: >
-        find ./training/ -name \*.php -exec php -l {} \; 2>&1 | 
-        grep -v "No syntax errors detected in" |
-        awk -F':' '/PHP Parse error: / {printf "<file name=\"%s\">\n  <error line=\"%s\" severity=\"error\" message=\"%s\"/>\n</file>\n", $1, $2, $4}' |
-        reviewdog -f=checkstyle -name="PHP Syntax Check" -reporter=github-pr-review
+    - name: Run PHP Syntax
       env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: find ./training/ -name "*.php" -exec sh -c 'php -l "$1" | grep -q "No syntax errors" || (echo "Error in $1" && php -l "$1")' _ {} \; > phpsyntax.txt
+
+    - name: Comment PHP Syntax
+      uses: thollander/actions-comment-pull-request@v2
+      with:
+        filePath: phpsyntax.txt
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Run PHPStan
