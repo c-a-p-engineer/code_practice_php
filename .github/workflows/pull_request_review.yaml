@@ -10,6 +10,10 @@ jobs:
   phpunit:
     runs-on: ubuntu-latest
     steps:
+    - name: Debug - Show directory and list files
+      run: |
+        pwd
+        ls -la
     - name: Setup environment
       uses: ./.github/actions/php_setup.yaml
     - name: Run PHPUnit with testdox output
