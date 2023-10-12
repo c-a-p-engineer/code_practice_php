@@ -117,7 +117,7 @@ jobs:
     # PHP_CodeSniffer
     - name: Run PHP_CodeSniffer
       run: >
-        ./vendor/bin/phpcs ./training/ --report=emacs --standard=PSR12
+        ./vendor/bin/phpcs ./training/ --report=checkstyle --standard=PSR12
         | reviewdog -f=checkstyle -name="phpcs" -reporter=github-pr-review -fail-on-error=true
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
