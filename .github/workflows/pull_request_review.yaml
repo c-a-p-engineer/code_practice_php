@@ -1,9 +1,8 @@
 # プルリクエストレビューのワークフローを定義
 name: PullRequestReview
 
-# 実行タイミング
+# プルリクエストが開かれたり、同期されたりしたときに実行
 on:
-  # プルリクエストが開かれたり、同期されたりしたときに実行
   pull_request:
     types:
       - opened
@@ -34,10 +33,8 @@ jobs:
     # PHPUnitを使用してテストを実行し、テストの結果をコメント
     - name: Run PHPUnit with testdox output
       # testdox出力を使用してPHPUnitを実行
-      run: >
-        ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt 
-        || echo "PHPUnit tests failed" 
-        > phpunit_fail.txt  
+      run: |
+        ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt || echo "PHPUnit tests failed" > phpunit_fail.txt  
       # エラーがあっても処理を続行
       continue-on-error: true
 
@@ -70,10 +67,7 @@ jobs:
       uses: ./.github/actions/setup_php
     # PHP Syntax Check
     - name: Run PHP Syntax
-    run: >
-      find ./training/ -name "*.php" -exec sh -c 'php -l "$1"
-      | grep -q "No syntax errors"
-      || (echo "Error in $1" && php -l "$1")' _ {} \; > phpsyntax.txt
+      run: find ./training/ -name "*.php" -exec sh -c 'php -l "$1" | grep -q "No syntax errors" || (echo "Error in $1" && php -l "$1")' _ {} \; > phpsyntax.txt
     # PHP Syntax Comment
     - name: Comment PHP Syntax
       uses: thollander/actions-comment-pull-request@v2
@@ -98,9 +92,8 @@ jobs:
       uses: ./.github/actions/setup_php
     # PHPStan
     - name: Run PHPStan
-    run: >
-        ./vendor/bin/phpstan analyse ./training/ --level=8 --no-progress --error-format=checkstyle 
-        | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review -fail-on-error=true
+      run: |
+        ./vendor/bin/phpstan analyse ./training/ --level=8 --no-progress --error-format=checkstyle | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review -fail-on-error=true
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -116,7 +109,6 @@ jobs:
     # PHP_CodeSniffer
     - name: Run PHP_CodeSniffer
       run: >
-        ./vendor/bin/phpcs ./training/ --report=checkstyle 
-        | reviewdog -f=checkstyle -name="phpcs" -reporter=github-pr-review -fail-on-error=true
+        ./vendor/bin/phpcs ./training/ --report=checkstyle | reviewdog -f=checkstyle -name="phpcs" -reporter=github-pr-review -fail-on-error=true
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
