@@ -1,18 +1,26 @@
+# 入力パラメータを定義。このアクションはPHPのセットアップを行います。
 inputs:
   name:
     description: 'Setup PHP'
 runs:
   using: "composite"
   steps:
+    # PHPのセットアップステップを定義
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
+        # 使用するPHPのバージョンを指定
         php-version: '8.2'
+         # 必要なPHP拡張を指定
         extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, mysql, pdo_mysql
+        # カバレッジにxdebugを使用
         coverage: xdebug
+    # Composerを使用して依存関係をインストール
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
       shell: bash
+    # reviewdogのセットアップ
     - uses: reviewdog/action-setup@v1
       with:
+        # 最新のreviewdogバージョンを使用
         reviewdog_version: latest

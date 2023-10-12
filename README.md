@@ -50,3 +50,14 @@ $ docker compose down
 ```sh
 $ docker exec -it php /bin/bash
 ```
+
+## コンテナ
+- PHP
+  - [http://localhost:8080/](http://localhost:8080/)
+- Mysql
+  - PROT:3306
+  - ID:develop
+  - PASSWORD:p@ssw0rd
+- PHPMyadmin
+  - [http://localhost:18080/](http://localhost:18080/)
+  - PHPMyadminにはMysqlのIDとパスワードでログインが可能

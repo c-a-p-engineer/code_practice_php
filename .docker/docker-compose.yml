@@ -1,38 +1,73 @@
+# Docker Composeバージョン
 version: '3'
 
+# サービス定義
 services:
+  # PHPサービス
   php:
+    # コンテナ名
     container_name: php
+    # ビルド設定
     build:
+      # ビルドコンテキストのディレクトリ
       context: .
+      # Dockerfileの位置
       dockerfile: ./php/Dockerfile
+    # ボリュームマウント設定
     volumes:
+      # ホストとコンテナの作業ディレクトリをマウント
       - ../:/var/www/html
+      # Apache設定ファイルのマウント
       - ./php/apache/:/etc/apache2/sites-enabled/
-      - ./php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      # xdebug設定ファイルのマウント
+      - ./php/php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    # ポートフォワーディング ホスト:コンテナ
     ports:
       - 8080:80
-    command: ["sh", "-c", "composer install; apache2-foreground"]
+    # 初期コマンド設定
+    # Composer Install と Apacheの起動
+    command: ["sh", "-c", "composer install;apache2-foreground"]
+    # 依存関係
     depends_on:
-      - db
+      - mysql
 
-  db:
-    container_name: db
+  # DBサービス（MySQL）
+  mysql:
+    # コンテナ名
+    container_name: mysql
+    # 使用するイメージ
     image: mysql:8.0
+    # ボリュームマウント設定
     volumes:
+      # データ保存ディレクトリをマウント
       - ./.data/mysql:/var/lib/mysql
+    # ポートフォワーディング ホスト:コンテナ
     ports:
       - "3306:3306"
+    # 環境変数設定
     environment:
+      # DBルートパスワード
       MYSQL_ROOT_PASSWORD: rootpw
+      # データベース名
       MYSQL_DATABASE: develop
+      # DBユーザー名
       MYSQL_USER: develop
+      # DBユーザーのパスワード
       MYSQL_PASSWORD: p@ssw0rd
+    # 依存関係
+    depends_on:
+      - phpmyadmin
 
+  # phpMyAdminサービス
   phpmyadmin:
+    # コンテナ名
     container_name: phpmyadmin
+    # 使用するイメージ
     image: phpmyadmin/phpmyadmin:latest
+    # 環境変数設定
     environment:
+      # DBサーバのホスト名
       PMA_HOST: 'mysql'
+    # ポートフォワーディング ホスト:コンテナ
     ports:
       - 18080:80

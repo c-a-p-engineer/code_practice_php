@@ -1,5 +1,7 @@
+# プルリクエストレビューのワークフローを定義
 name: PullRequestReview
 
+# プルリクエストが開かれたり、同期されたりしたときに実行
 on:
   pull_request:
     types:
@@ -7,9 +9,11 @@ on:
       - synchronize
 
 jobs:
+  # PHPUnitジョブ
   phpunit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # 最新のUbuntuランナーを使用
 
+    # MySQLサービスを定義
     services:
       mysql:
         image: mysql:8.0
@@ -21,33 +25,50 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
+    # コードをチェックアウト
+    - uses: actions/checkout@v4
+    # Setup PHP
+    - name: Setup PHP
+      uses: ./.github/actions/setup_php 
+    # PHPUnitを使用してテストを実行し、テストの結果をコメント
     - name: Run PHPUnit with testdox output
+      # testdox出力を使用してPHPUnitを実行
       run: |
-        ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt || echo "PHPUnit tests failed" > phpunit_fail.txt
+        ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt || echo "PHPUnit tests failed" > phpunit_fail.txt  
+      # エラーがあっても処理を続行
       continue-on-error: true
 
+    # PHPUnitのテスト結果をプルリクエストにコメント
     - name: Comment PHPUnit testdox result
       uses: thollander/actions-comment-pull-request@v2
       with:
+        # phpunit.txtファイルの内容をコメント
         filePath: phpunit.txt
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # GitHubトークンを使用してコメントを投稿
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
 
+    # PHPUnitの失敗を検出し、エラーメッセージをコメント
     - name: Check for PHPUnit failures and comment
+      # phpunit_fail.txtファイルが存在する場合、エラーとして処理を終了
       run: |
-        if [ -f "phpunit_fail.txt" ]; then
+        if [ -f "phpunit_fail.txt" ]; then  
           echo "Failed tests detected, exiting with error."
           exit 1
         fi
 
+  # PHPSyntaxジョブ
   phpsyntax:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Setup environment
+    # コードをチェックアウト
+    - uses: actions/checkout@v4
+    # Setup PHP
+    - name: Setup PHP
       uses: ./.github/actions/setup_php
+    # PHP Syntax Check
     - name: Run PHP Syntax
       run: find ./training/ -name "*.php" -exec sh -c 'php -l "$1" | grep -q "No syntax errors" || (echo "Error in $1" && php -l "$1")' _ {} \; > phpsyntax.txt
+    # PHP Syntax Comment
     - name: Comment PHP Syntax
       uses: thollander/actions-comment-pull-request@v2
       with:
@@ -60,13 +81,16 @@ jobs:
           exit 1
         fi
 
+  # PHPStanジョブ
   phpstan:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Setup environment
+    # コードをチェックアウト
+    - uses: actions/checkout@v4
+    # Setup PHP
+    - name: Setup PHP
       uses: ./.github/actions/setup_php
+    # PHPStan
     - name: Run PHPStan
       run: |
         ./vendor/bin/phpstan analyse ./training/ --level=8 --no-progress --error-format=checkstyle
@@ -74,13 +98,16 @@ jobs:
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # PHP_CodeSnifferジョブ
   phpcs:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    - name: Setup environment
+    # コードをチェックアウト
+    - uses: actions/checkout@v4
+    # Setup PHP
+    - name: Setup PHP
       uses: ./.github/actions/setup_php
+    # PHP_CodeSniffer
     - name: Run PHP_CodeSniffer
       run: |
         ./vendor/bin/phpcs ./training/ --report=checkstyle
