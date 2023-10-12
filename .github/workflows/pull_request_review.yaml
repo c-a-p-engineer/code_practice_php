@@ -34,7 +34,8 @@ jobs:
     - name: Run PHPUnit with testdox output
       # testdox出力を使用してPHPUnitを実行
       run: |
-        ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt || echo "PHPUnit tests failed" > phpunit_fail.txt  
+        ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt \
+        || echo "PHPUnit tests failed" > phpunit_fail.txt  
       # エラーがあっても処理を続行
       continue-on-error: true
 
@@ -67,7 +68,10 @@ jobs:
       uses: ./.github/actions/setup_php
     # PHP Syntax Check
     - name: Run PHP Syntax
-      run: find ./training/ -name "*.php" -exec sh -c 'php -l "$1" | grep -q "No syntax errors" || (echo "Error in $1" && php -l "$1")' _ {} \; > phpsyntax.txt
+      run: |
+      find ./training/ -name "*.php" -exec sh -c 'php -l "$1" \
+      | grep -q "No syntax errors" \
+      || (echo "Error in $1" && php -l "$1")' _ {} \; > phpsyntax.txt
     # PHP Syntax Comment
     - name: Comment PHP Syntax
       uses: thollander/actions-comment-pull-request@v2
@@ -93,7 +97,7 @@ jobs:
     # PHPStan
     - name: Run PHPStan
       run: |
-        ./vendor/bin/phpstan analyse ./training/ --level=8 --no-progress --error-format=checkstyle
+        ./vendor/bin/phpstan analyse ./training/ --level=8 --no-progress --error-format=checkstyle \
         | reviewdog -f=checkstyle -name="phpstan" -reporter=github-pr-review -fail-on-error=true
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -110,7 +114,7 @@ jobs:
     # PHP_CodeSniffer
     - name: Run PHP_CodeSniffer
       run: |
-        ./vendor/bin/phpcs ./training/ --report=checkstyle
+        ./vendor/bin/phpcs ./training/ --report=checkstyle \
         | reviewdog -f=checkstyle -name="phpcs" -reporter=github-pr-review -fail-on-error=true
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
