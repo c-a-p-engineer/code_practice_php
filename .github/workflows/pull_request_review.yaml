@@ -72,6 +72,7 @@ jobs:
         find ./training/ -name "*.php" -exec sh -c 'php -l "$1"
         | grep -q "No syntax errors"
         || (echo "Error in $1" && php -l "$1")' _ {} \; > phpsyntax.txt
+
     # Check if phpsyntax.txt exists and then comment
     - name: Comment PHP Syntax if file exists
       run: |
