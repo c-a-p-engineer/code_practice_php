@@ -35,8 +35,7 @@ jobs:
     - name: Run PHPUnit with testdox output
       # testdox出力を使用してPHPUnitを実行
       run: |
-        ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt \
-        || echo "PHPUnit tests failed" > phpunit_fail.txt  
+        ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt || echo "PHPUnit tests failed" > phpunit_fail.txt  
       # エラーがあっても処理を続行
       continue-on-error: true
 
