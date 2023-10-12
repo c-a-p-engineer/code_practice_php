@@ -68,9 +68,9 @@ jobs:
       uses: ./.github/actions/setup_php
     # PHP Syntax Check
     - name: Run PHP Syntax
-      run: |
-      find ./training/ -name "*.php" -exec sh -c 'php -l "$1" \
-      | grep -q "No syntax errors" \
+    run: |
+      find ./training/ -name "*.php" \
+      -exec sh -c 'php -l "$1" | grep -q "No syntax errors" \
       || (echo "Error in $1" && php -l "$1")' _ {} \; > phpsyntax.txt
     # PHP Syntax Comment
     - name: Comment PHP Syntax
