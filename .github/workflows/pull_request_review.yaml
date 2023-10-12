@@ -72,23 +72,18 @@ jobs:
         find ./training/ -name "*.php" -exec sh -c 'php -l "$1"
         | grep -q "No syntax errors"
         || (echo "Error in $1" && php -l "$1")' _ {} \; > phpsyntax.txt
-
-    # Check if phpsyntax.txt exists and then comment
-    - name: Comment PHP Syntax if file exists
+    - name: Check for PHP Syntax errors and fail if found
       run: |
         if [ -f "phpsyntax.txt" ]; then
-          echo "phpsyntax.txt exists, proceeding to comment."
-        else
-          echo "phpsyntax.txt does not exist, exiting step."
+          echo "Syntax errors not found in PHP files."
           exit 0
         fi
-      # PHP Syntax Comment
-      - name: Comment PHP Syntax
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          filePath: phpsyntax.txt
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    # Check for PHP Syntax errors and fail if found
+    # PHP Syntax Comment
+    - name: Comment PHP Syntax
+      uses: thollander/actions-comment-pull-request@v2
+      with:
+        filePath: phpsyntax.txt
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Check for PHP Syntax errors and fail if found
       run: |
         if [ -s "phpsyntax.txt" ]; then
