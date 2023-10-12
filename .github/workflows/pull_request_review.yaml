@@ -74,7 +74,6 @@ jobs:
         || (echo "Error in $1" && php -l "$1")' _ {} \; > phpsyntax.txt
     # Check if phpsyntax.txt exists and then comment
     - name: Comment PHP Syntax if file exists
-      if: steps.setup.outputs.cache-hit != 'true' && env.CI == 'true' && github.event_name != 'push' && github.repository == 'owner/repo'
       run: |
         if [ -f "phpsyntax.txt" ]; then
           echo "phpsyntax.txt exists, proceeding to comment."
