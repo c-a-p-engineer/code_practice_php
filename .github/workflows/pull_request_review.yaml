@@ -24,23 +24,30 @@ jobs:
           MYSQL_DATABASE: develop
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
-    steps:
+     steps:
     # コードをチェックアウト
     - uses: actions/checkout@v4
     # Setup PHP
     - name: Setup PHP
       uses: ./.github/actions/setup_php 
+    # Webサーバーの起動
+    - name: Start Web Server
+      working-directory: training
+      run: php -S localhost:8000 &
     # PHPUnitを使用してテストを実行し、テストの結果をコメント
-    - name: Run PHPUnit with testdox output
-      # testdox出力を使用してPHPUnitを実行
+    - name: Run PHPUnit output
+      # PHPUnitを実行
       run: >
-        ./vendor/bin/phpunit ./tests/ --testdox > phpunit.txt
-        || echo "PHPUnit tests failed" > phpunit_fail.txt  
+        ./vendor/bin/phpunit ./tests/ > phpunit.txt
+        || echo "PHPUnit tests failed" > phpunit_fail.txt
+      # PHPUnit実行時の環境変数設定
+      env:
+        PORT: 8000
       # エラーがあっても処理を続行
       continue-on-error: true
 
-    # PHPUnitのテスト結果をプルリクエストにコメント
-    - name: Comment PHPUnit testdox result
+          # PHPUnitのテスト結果をプルリクエストにコメント
+    - name: Comment PHPUnit result
       uses: thollander/actions-comment-pull-request@v2
       with:
         # phpunit.txtファイルの内容をコメント
