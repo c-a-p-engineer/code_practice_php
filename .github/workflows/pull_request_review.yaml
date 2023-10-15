@@ -17,14 +17,20 @@ jobs:
     services:
       mysql:
         image: mysql:8.0
+        ports:
+          - 3306:3306
         env:
           MYSQL_ROOT_PASSWORD: password
           MYSQL_USER: develop
           MYSQL_PASSWORD: p@ssw0rd
           MYSQL_DATABASE: develop
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1"
+          --health-interval 20s
+          --health-timeout 10s
+          --health-retries 10
 
-     steps:
+    steps:
     # コードをチェックアウト
     - uses: actions/checkout@v4
     # Setup PHP
@@ -46,7 +52,7 @@ jobs:
       # エラーがあっても処理を続行
       continue-on-error: true
 
-          # PHPUnitのテスト結果をプルリクエストにコメント
+    # PHPUnitのテスト結果をプルリクエストにコメント
     - name: Comment PHPUnit result
       uses: thollander/actions-comment-pull-request@v2
       with:
