@@ -1,0 +1,51 @@
+{
+    // VS Code内で表示されるコンテナ名
+    "name": "PHP Development",
+
+    // 使用するdocker-compose.ymlファイルのパス
+    "dockerComposeFile": [
+        "../.docker/docker-compose.yml"
+    ],
+
+    // VS Code で開くコンテナ。docker-compose.yml内で定義されたサービス名を指定。
+    "service": "php",
+
+    // コンテナ内での作業ディレクトリを指定します。
+    "workspaceFolder": "/var/www/html",
+
+    // VS Codeの設定
+    "settings": {
+        // PHPファイルを保存する際に自動的にフォーマットする。
+        "[php]": {
+            "editor.formatOnSave": true
+        },
+        // 検索から除外するフォルダやファイルを指定。
+        "search.exclude": {
+            "**/vendor/*/**": true
+        }
+    },
+
+    // インストールするVS Code拡張機能のIDを列挙。
+    "extensions": [
+        // Gitのブランチやコミット履歴を視覚的に表示する拡張機能
+        "mhutchie.git-graph",
+        // Gitの詳細な情報を表示し、Git操作を強化する拡張機能
+        "eamodio.gitlens",
+        // カッコのペアを色分けして見やすくする拡張機能
+        "coenraads.bracket-pair-colorizer-2",
+        // ログファイルのシンタックスハイライトとテーマを提供する拡張機能
+        "emilast.LogFileHighlighter",
+        // PHPのDocBlocks（コメント）を簡単に挿入する拡張機能
+        "neilbrayfield.php-docblocker",
+        // PHPのコード補完、フォーマット、定義ジャンプなどを提供する拡張機能
+        "bmewburn.vscode-intelephense-client",
+        // PHPのデバッグをサポートする拡張機能
+        "felixfbecker.php-debug",
+        // PHPのコード補完とシンタックスハイライトを提供する拡張機能
+        "felixfbecker.php-intellisense",
+        // Xdebugと連携してPHPのデバッグを行う拡張機能
+        "xdebug.php-debug",
+        // コード内のスペルチェックを行う拡張機能
+        "streetsidesoftware.code-spell-checker",
+    ]
+}
